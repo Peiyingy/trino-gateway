@@ -1,0 +1,13 @@
+---
+name: "routing_cluster_higher_priority_rule"
+description: "Higher priority sets cluster"
+priority: 100
+condition: "request.getHeader(\"X-Trino-User\") == \"pye\""
+actions:
+    - "result.put(\"routingCluster\", \"trino-1\")"
+---
+name: "routing group"
+priority: 10
+condition: "request.getHeader(\"X-Trino-User\") == \"pye\""
+actions:
+  - "result.put(\"routingGroup\", \"adhoc\")"
