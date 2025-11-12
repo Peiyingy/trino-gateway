@@ -51,7 +51,7 @@ import static io.airlift.http.client.Request.Builder.preparePost;
 import static io.airlift.json.JsonCodec.jsonCodec;
 import static io.trino.gateway.ha.handler.HttpUtils.TRINO_QUERY_PROPERTIES;
 import static io.trino.gateway.ha.handler.HttpUtils.TRINO_REQUEST_USER;
-import static io.trino.gateway.ha.router.RoutingGroupSelector.ROUTING_GROUP_HEADER;
+import static io.trino.gateway.ha.router.RoutingDecisionSelector.ROUTING_GROUP_HEADER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,7 +63,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-final class TestExternalRoutingGroupSelector
+final class TestExternalRoutingDecisionSelector
 {
     RequestAnalyzerConfig requestAnalyzerConfig = new RequestAnalyzerConfig();
     private HttpClient httpClient;
@@ -138,8 +138,8 @@ final class TestExternalRoutingGroupSelector
         HttpClient httpClient = mock(HttpClient.class);
 
         RulesExternalConfiguration rulesExternalConfiguration = provideRoutingRuleExternalConfig();
-        RoutingGroupSelector routingGroupSelector =
-                RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        RoutingDecisionSelector routingDecisionSelector =
+                RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
         HttpServletRequest mockRequest = prepareMockRequest();
         setMockHeaders(mockRequest);
         when(mockRequest.getHeader(ROUTING_GROUP_HEADER)).thenReturn("default-group-api-failure");
@@ -148,7 +148,7 @@ final class TestExternalRoutingGroupSelector
         when(httpClient.execute(any(), any())).thenThrow(new RuntimeException("Simulated failure"));
 
         // Mock the behavior of httpClient.execute
-        String routingGroup = routingGroupSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
 
         // Fallback expected
         assertThat(routingGroup).isEqualTo("default-group-api-failure");
@@ -161,7 +161,7 @@ final class TestExternalRoutingGroupSelector
         rulesExternalConfiguration.setUrlPath(null);
 
         // Assert that a RuntimeException is thrown with message
-        assertThatThrownBy(() -> RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig))
+        assertThatThrownBy(() -> RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Invalid URL provided, using routing group header as default.");
     }
@@ -173,8 +173,8 @@ final class TestExternalRoutingGroupSelector
         RulesExternalConfiguration rulesExternalConfiguration = provideRoutingRuleExternalConfig();
         rulesExternalConfiguration.setExcludeHeaders(List.of("test-exclude-header"));
 
-        RoutingGroupSelector routingGroupSelector =
-                RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        RoutingDecisionSelector routingDecisionSelector =
+                RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
 
         // Mock headers to be read by mockRequest
         HttpServletRequest mockRequest = mock(HttpServletRequest.class);
@@ -187,11 +187,11 @@ final class TestExternalRoutingGroupSelector
         when(mockRequest.getHeaders("not-excluded-header")).thenReturn(Collections.enumeration(customValidHeaderValues));
 
         // Use reflection to get valid headers after removing excludeHeaders headers
-        Method getValidHeaders = ExternalRoutingGroupSelector.class.getDeclaredMethod("getValidHeaders", HttpServletRequest.class);
+        Method getValidHeaders = ExternalRoutingDecisionSelector.class.getDeclaredMethod("getValidHeaders", HttpServletRequest.class);
         getValidHeaders.setAccessible(true);
 
         @SuppressWarnings("unchecked")
-        Multimap<String, String> validHeaders = (Multimap<String, String>) getValidHeaders.invoke(routingGroupSelector, mockRequest);
+        Multimap<String, String> validHeaders = (Multimap<String, String>) getValidHeaders.invoke(routingDecisionSelector, mockRequest);
         assertThat(validHeaders.size()).isEqualTo(1);
     }
 
@@ -201,7 +201,7 @@ final class TestExternalRoutingGroupSelector
     {
         // Setup
         RulesExternalConfiguration rulesExternalConfiguration = provideRoutingRuleExternalConfig();
-        RoutingGroupSelector selector = RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        RoutingDecisionSelector selector = RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
         HttpServletRequest mockRequest = prepareMockRequest();
         setMockHeaders(mockRequest);
         String headerKey = "X-Header";
@@ -231,7 +231,7 @@ final class TestExternalRoutingGroupSelector
         // Setup
         RulesExternalConfiguration rulesExternalConfiguration = provideRoutingRuleExternalConfig();
         rulesExternalConfiguration.setExcludeHeaders(ImmutableList.of("X-Custom-Header"));
-        RoutingGroupSelector selector = RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        RoutingDecisionSelector selector = RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
         HttpServletRequest mockRequest = prepareMockRequest();
         setMockHeaders(mockRequest);
         String allowedHeaderKey = "X-Header";
@@ -263,7 +263,7 @@ final class TestExternalRoutingGroupSelector
     {
         // Setup
         RulesExternalConfiguration rulesExternalConfiguration = provideRoutingRuleExternalConfig();
-        RoutingGroupSelector selector = RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        RoutingDecisionSelector selector = RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
         HttpServletRequest mockRequest = prepareMockRequest();
         setMockHeaders(mockRequest);
         String headerKey = "X-Header";
@@ -288,7 +288,7 @@ final class TestExternalRoutingGroupSelector
     @Test
     void testHeaderModificationWithNoExternalHeaders()
     {
-        RoutingGroupSelector selector = RoutingGroupSelector.byRoutingExternal(httpClient, provideRoutingRuleExternalConfig(), requestAnalyzerConfig);
+        RoutingDecisionSelector selector = RoutingDecisionSelector.byRoutingExternal(httpClient, provideRoutingRuleExternalConfig(), requestAnalyzerConfig);
         HttpServletRequest mockRequest = prepareMockRequest();
         setMockHeaders(mockRequest);
 
@@ -308,7 +308,7 @@ final class TestExternalRoutingGroupSelector
     {
         // Setup
         RulesExternalConfiguration rulesExternalConfiguration = provideRoutingRuleExternalConfig();
-        RoutingGroupSelector selector = RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        RoutingDecisionSelector selector = RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
         HttpServletRequest mockRequest = prepareMockRequest();
         setMockHeaders(mockRequest);
         String headerKey = "X-Empty-Group-Header";
@@ -335,7 +335,7 @@ final class TestExternalRoutingGroupSelector
         // Setup
         RulesExternalConfiguration rulesExternalConfiguration = provideRoutingRuleExternalConfig();
         rulesExternalConfiguration.setPropagateErrors(false);
-        RoutingGroupSelector selector = RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        RoutingDecisionSelector selector = RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
         HttpServletRequest mockRequest = prepareMockRequest();
         setMockHeaders(mockRequest);
 
@@ -357,7 +357,7 @@ final class TestExternalRoutingGroupSelector
         // Setup
         RulesExternalConfiguration rulesExternalConfiguration = provideRoutingRuleExternalConfig();
         rulesExternalConfiguration.setPropagateErrors(true);
-        RoutingGroupSelector selector = RoutingGroupSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        RoutingDecisionSelector selector = RoutingDecisionSelector.byRoutingExternal(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
 
         HttpServletRequest mockRequest = prepareMockRequest();
         setMockHeaders(mockRequest);

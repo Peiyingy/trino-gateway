@@ -23,7 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 /**
  * RoutingGroupSelector provides a way to match an HTTP request to a Gateway routing group.
  */
-public interface RoutingGroupSelector
+public interface RoutingDecisionSelector
 {
     String ROUTING_GROUP_HEADER = "X-Trino-Routing-Group";
 
@@ -31,7 +31,7 @@ public interface RoutingGroupSelector
      * Routing group selector that relies on the X-Trino-Routing-Group
      * header to determine the right routing group.
      */
-    static RoutingGroupSelector byRoutingGroupHeader()
+    static RoutingDecisionSelector byRoutingGroupHeader()
     {
         return request -> new RoutingSelectorResponse(request.getHeader(ROUTING_GROUP_HEADER));
     }
@@ -40,21 +40,21 @@ public interface RoutingGroupSelector
      * Routing group selector that uses routing engine rules
      * to determine the right routing group.
      */
-    static RoutingGroupSelector byRoutingRulesEngine(String rulesConfigPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
+    static RoutingDecisionSelector byRoutingRulesEngine(String rulesConfigPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
     {
-        return new FileBasedRoutingGroupSelector(rulesConfigPath, rulesRefreshPeriod, requestAnalyzerConfig);
+        return new FileBasedRoutingDecisionSelector(rulesConfigPath, rulesRefreshPeriod, requestAnalyzerConfig);
     }
 
     /**
      * Routing group selector that uses RESTful API
      * to determine the right routing group.
      */
-    static RoutingGroupSelector byRoutingExternal(
+    static RoutingDecisionSelector byRoutingExternal(
             HttpClient httpClient,
             RulesExternalConfiguration rulesExternalConfiguration,
             RequestAnalyzerConfig requestAnalyzerConfig)
     {
-        return new ExternalRoutingGroupSelector(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        return new ExternalRoutingDecisionSelector(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
     }
 
     /**

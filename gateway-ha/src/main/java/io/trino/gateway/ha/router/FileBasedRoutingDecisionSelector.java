@@ -38,10 +38,10 @@ import static io.trino.gateway.ha.handler.HttpUtils.TRINO_REQUEST_USER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.sort;
 
-public class FileBasedRoutingGroupSelector
-        implements RoutingGroupSelector
+public class FileBasedRoutingDecisionSelector
+        implements RoutingDecisionSelector
 {
-    private static final Logger log = Logger.get(FileBasedRoutingGroupSelector.class);
+    private static final Logger log = Logger.get(FileBasedRoutingDecisionSelector.class);
     public static final String RESULTS_ROUTING_GROUP_KEY = "routingGroup";
 
     private static final ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
@@ -49,7 +49,7 @@ public class FileBasedRoutingGroupSelector
     private final Supplier<List<RoutingRule>> rules;
     private final boolean analyzeRequest;
 
-    public FileBasedRoutingGroupSelector(String rulesPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
+    public FileBasedRoutingDecisionSelector(String rulesPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
     {
         analyzeRequest = requestAnalyzerConfig.isAnalyzeRequest();
 

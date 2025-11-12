@@ -51,10 +51,10 @@ import static io.trino.gateway.ha.handler.HttpUtils.TRINO_REQUEST_USER;
 import static java.util.Collections.list;
 import static java.util.Objects.requireNonNull;
 
-public class ExternalRoutingGroupSelector
-        implements RoutingGroupSelector
+public class ExternalRoutingDecisionSelector
+        implements RoutingDecisionSelector
 {
-    private static final Logger log = Logger.get(ExternalRoutingGroupSelector.class);
+    private static final Logger log = Logger.get(ExternalRoutingDecisionSelector.class);
     private final Set<String> excludeHeaders;
     private final URI uri;
     private final boolean propagateErrors;
@@ -65,7 +65,7 @@ public class ExternalRoutingGroupSelector
             createJsonResponseHandler(jsonCodec(ExternalRouterResponse.class));
 
     @VisibleForTesting
-    ExternalRoutingGroupSelector(HttpClient httpClient, RulesExternalConfiguration rulesExternalConfiguration, RequestAnalyzerConfig requestAnalyzerConfig)
+    ExternalRoutingDecisionSelector(HttpClient httpClient, RulesExternalConfiguration rulesExternalConfiguration, RequestAnalyzerConfig requestAnalyzerConfig)
     {
         this.httpClient = requireNonNull(httpClient, "httpClient is null");
         this.excludeHeaders = ImmutableSet.<String>builder()
