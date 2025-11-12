@@ -42,6 +42,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  * This class performs health check, stats counts for each backend and provides a backend given
  * request object. Default implementation comes here.
@@ -103,8 +104,12 @@ public abstract class BaseRoutingManager
      * backend is found.
      */
     @Override
-    public ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String user)
+    public ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String routingCluster, String user)
     {
+        if (!isNullOrEmpty(routingCluster)) {
+            Optional<ProxyBackendConfiguration> backend = gatewayBackendManager.getBackendByName(routingCluster);
+            return backend.orElseGet(() -> provideDefaultBackendConfiguration(user));
+        }
         List<ProxyBackendConfiguration> backends = gatewayBackendManager.getActiveBackends(routingGroup).stream()
                 .filter(backEnd -> isBackendHealthy(backEnd.getName()))
                 .toList();

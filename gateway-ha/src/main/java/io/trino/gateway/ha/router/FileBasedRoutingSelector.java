@@ -27,10 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
 import static io.trino.gateway.ha.handler.HttpUtils.TRINO_QUERY_PROPERTIES;
@@ -38,18 +35,19 @@ import static io.trino.gateway.ha.handler.HttpUtils.TRINO_REQUEST_USER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.sort;
 
-public class FileBasedRoutingDecisionSelector
-        implements RoutingDecisionSelector
+public class FileBasedRoutingSelector
+        implements RoutingSelector
 {
-    private static final Logger log = Logger.get(FileBasedRoutingDecisionSelector.class);
+    private static final Logger log = Logger.get(FileBasedRoutingSelector.class);
     public static final String RESULTS_ROUTING_GROUP_KEY = "routingGroup";
+    public static final String RESULTS_ROUTING_CLUSTER_KEY = "routingCluster";
 
     private static final ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
 
     private final Supplier<List<RoutingRule>> rules;
     private final boolean analyzeRequest;
 
-    public FileBasedRoutingDecisionSelector(String rulesPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
+    public FileBasedRoutingSelector(String rulesPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
     {
         analyzeRequest = requestAnalyzerConfig.isAnalyzeRequest();
 
@@ -59,7 +57,12 @@ public class FileBasedRoutingDecisionSelector
     @Override
     public RoutingSelectorResponse findRoutingDestination(HttpServletRequest request)
     {
-        Map<String, String> result = new HashMap<>();
+        LinkedHashMap<String, String> result = new LinkedHashMap<>(1) {@Override
+            protected boolean removeEldestEntry(Map.Entry<String, String> eldest)
+            {
+                return size() > 1;
+            }
+        };
         Map<String, Object> state = new HashMap<>();
 
         Map<String, Object> data;
@@ -78,7 +81,7 @@ public class FileBasedRoutingDecisionSelector
                 rule.evaluateAction(result, data, state);
             }
         });
-        return new RoutingSelectorResponse(result.get(RESULTS_ROUTING_GROUP_KEY));
+        return new RoutingSelectorResponse(result.get(RESULTS_ROUTING_GROUP_KEY), result.get(RESULTS_ROUTING_CLUSTER_KEY));
     }
 
     public List<RoutingRule> readRulesFromPath(Path rulesPath)

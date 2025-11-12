@@ -26,9 +26,11 @@ import java.util.Map;
     * Specify the target routing group for a request
     * Provide additional headers that should be added to the request
  */
-public interface RoutingGroupResponse
+public interface RoutingResponse
 {
     @Nullable String routingGroup();
+
+    @Nullable String routingCluster();
 
     Map<String, String> externalHeaders();
 }

@@ -21,8 +21,7 @@ import io.trino.gateway.ha.config.ProxyBackendConfiguration;
 import io.trino.gateway.ha.handler.schema.RoutingDestination;
 import io.trino.gateway.ha.handler.schema.RoutingTargetResponse;
 import io.trino.gateway.ha.router.GatewayCookie;
-import io.trino.gateway.ha.router.RoutingDecision;
-import io.trino.gateway.ha.router.RoutingDecisionSelector;
+import io.trino.gateway.ha.router.RoutingSelector;
 import io.trino.gateway.ha.router.RoutingManager;
 import io.trino.gateway.ha.router.schema.RoutingSelectorResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,7 +45,7 @@ public class RoutingTargetHandler
 {
     private static final Logger log = Logger.get(RoutingTargetHandler.class);
     private final RoutingManager routingManager;
-    private final RoutingDecisionSelector routingDecisionSelector;
+    private final RoutingSelector routingSelector;
     private final String defaultRoutingGroup;
     private final List<String> statementPaths;
     private final boolean requestAnalyserClientsUseV2Format;
@@ -56,11 +55,11 @@ public class RoutingTargetHandler
     @Inject
     public RoutingTargetHandler(
             RoutingManager routingManager,
-            RoutingDecisionSelector routingDecisionSelector,
+            RoutingSelector routingSelector,
             HaGatewayConfiguration haGatewayConfiguration)
     {
         this.routingManager = requireNonNull(routingManager);
-        this.routingDecisionSelector = requireNonNull(routingDecisionSelector);
+        this.routingSelector = requireNonNull(routingSelector);
         this.defaultRoutingGroup = haGatewayConfiguration.getRouting().getDefaultRoutingGroup();
         statementPaths = requireNonNull(haGatewayConfiguration.getStatementPaths());
         requestAnalyserClientsUseV2Format = haGatewayConfiguration.getRequestAnalyzerConfig().isClientsUseV2Format();
@@ -89,14 +88,15 @@ public class RoutingTargetHandler
 
     private RoutingTargetResponse getRoutingTargetResponse(HttpServletRequest request)
     {
-        RoutingSelectorResponse routingDestination = routingDecisionSelector.findRoutingDestination(request);
+        RoutingSelectorResponse routingDestination = routingSelector.findRoutingDestination(request);
         String user = request.getHeader(USER_HEADER);
 
         // This falls back on default routing group backend if there is no cluster found for the routing group.
+        String routingCluster = routingDestination.routingCluster();
         String routingGroup = !isNullOrEmpty(routingDestination.routingGroup())
                 ? routingDestination.routingGroup()
                 : defaultRoutingGroup;
-        ProxyBackendConfiguration backendConfiguration = routingManager.provideBackendConfiguration(routingGroup, user);
+        ProxyBackendConfiguration backendConfiguration = routingManager.provideBackendConfiguration(routingGroup, routingCluster, user);
         String clusterHost = backendConfiguration.getProxyTo();
         String externalUrl = backendConfiguration.getExternalUrl();
         // Apply headers from RoutingDestination if there are any

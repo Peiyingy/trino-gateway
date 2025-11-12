@@ -43,7 +43,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.trino.gateway.ha.handler.HttpUtils.TRINO_QUERY_PROPERTIES;
-import static io.trino.gateway.ha.router.RoutingDecisionSelector.ROUTING_GROUP_HEADER;
+import static io.trino.gateway.ha.router.RoutingSelector.ROUTING_GROUP_HEADER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -52,7 +52,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
-final class TestRoutingDecisionSelector
+final class TestRoutingSelector
 {
     public static final String TRINO_SOURCE_HEADER = "X-Trino-Source";
     public static final String TRINO_CLIENT_TAGS_HEADER = "X-Trino-Client-Tags";
@@ -86,15 +86,15 @@ final class TestRoutingDecisionSelector
 
         // If the header is present the routing group is the value of that header.
         when(mockRequest.getHeader(ROUTING_GROUP_HEADER)).thenReturn("batch_backend");
-        RoutingDecisionSelector routingDecisionSelector = RoutingDecisionSelector.byRoutingGroupHeader();
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        RoutingSelector routingSelector = RoutingSelector.byRoutingGroupHeader();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
 
         assertThat(routingGroup).isEqualTo("batch_backend");
 
         // If the header is not present just return null.
         when(mockRequest.getHeader(ROUTING_GROUP_HEADER)).thenReturn(null);
-        routingDecisionSelector = RoutingDecisionSelector.byRoutingGroupHeader();
-        routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        routingSelector = RoutingSelector.byRoutingGroupHeader();
+        routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
 
         assertThat(routingGroup).isNull();
     }
@@ -103,22 +103,22 @@ final class TestRoutingDecisionSelector
     @MethodSource("provideRoutingRuleConfigFiles")
     void testByRoutingRulesEngine(String rulesConfigPath)
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(rulesConfigPath, oneHourRefreshPeriod, requestAnalyzerConfig);
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(rulesConfigPath, oneHourRefreshPeriod, requestAnalyzerConfig);
 
         HttpServletRequest mockRequest = new QueryRequestMock()
                 .httpHeader(TRINO_SOURCE_HEADER, "airflow")
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("etl");
     }
 
     @Test
     void testGetUserFromBasicAuth()
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -129,7 +129,7 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
 
         assertThat(routingGroup).isEqualTo("will-group");
     }
@@ -138,8 +138,8 @@ final class TestRoutingDecisionSelector
     void testTrinoQueryPropertiesQueryDetails()
             throws IOException
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -150,7 +150,7 @@ final class TestRoutingDecisionSelector
                 .httpHeader(TrinoQueryProperties.TRINO_SCHEMA_HEADER_NAME, "schem_\\\"default")
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
 
         assertThat(routingGroup).isEqualTo("tbl-group");
     }
@@ -159,8 +159,8 @@ final class TestRoutingDecisionSelector
     void testTrinoQueryPropertiesCatalogSchemas()
             throws IOException
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -172,15 +172,15 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("catalog-schema-group");
     }
 
     @Test
     void testTrinoQueryPropertiesSessionDefaults()
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -191,7 +191,7 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("defaults-group");
     }
 
@@ -199,8 +199,8 @@ final class TestRoutingDecisionSelector
     void testTrinoQueryPropertiesQueryType()
             throws IOException
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -210,7 +210,7 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("type-group");
     }
 
@@ -218,8 +218,8 @@ final class TestRoutingDecisionSelector
     void testTrinoQueryPropertiesResourceGroupQueryType()
             throws IOException
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -229,7 +229,7 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("resource-group-type-group");
     }
 
@@ -238,8 +238,8 @@ final class TestRoutingDecisionSelector
             throws IOException
     {
         requestAnalyzerConfig.setClientsUseV2Format(true);
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -248,7 +248,7 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("type-group");
     }
 
@@ -259,8 +259,8 @@ final class TestRoutingDecisionSelector
         String encodedStatements = "statement1=SELECT+%27s1%27+c%0A%0A,statement2=SELECT+%27s2%27+c%0A%0A,statement3=SELECT%0A++%27%2C%27+comma%0A%2C+%27%3D%27+eq%0A%0A,statement4=SELECT%0A++c1%0A%2C+c2%0AFROM%0A++foo%0A";
 
         String body = "EXECUTE statement4";
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -274,7 +274,7 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("statement-header-group");
     }
 
@@ -282,8 +282,8 @@ final class TestRoutingDecisionSelector
     void testTrinoQueryPropertiesParsingError()
             throws IOException
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(
                         "src/test/resources/rules/routing_rules_trino_query_properties.yml",
                         oneHourRefreshPeriod,
                         requestAnalyzerConfig);
@@ -296,7 +296,7 @@ final class TestRoutingDecisionSelector
                 .getHttpServletRequest();
 
         // When parsing fails, the query should route to the default "no-match" group
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("no-match");
 
         // Verify that the TrinoQueryProperties indicates a parsing failure
@@ -310,8 +310,8 @@ final class TestRoutingDecisionSelector
     @MethodSource("provideRoutingRuleConfigFiles")
     void testByRoutingRulesEngineSpecialLabel(String rulesConfigPath)
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(rulesConfigPath, oneHourRefreshPeriod, requestAnalyzerConfig);
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(rulesConfigPath, oneHourRefreshPeriod, requestAnalyzerConfig);
 
         HttpServletRequest mockRequest = new QueryRequestMock()
                 .httpHeader(TRINO_SOURCE_HEADER, "airflow")
@@ -319,7 +319,7 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("etl-special");
     }
 
@@ -327,8 +327,8 @@ final class TestRoutingDecisionSelector
     @MethodSource("provideRoutingRuleConfigFiles")
     void testByRoutingRulesEngineNoMatch(String rulesConfigPath)
     {
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(rulesConfigPath, oneHourRefreshPeriod, requestAnalyzerConfig);
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(rulesConfigPath, oneHourRefreshPeriod, requestAnalyzerConfig);
 
         // even though special label is present, query is not from airflow.
         // should return no match
@@ -337,7 +337,7 @@ final class TestRoutingDecisionSelector
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
 
         assertThat(routingGroup).isNull();
     }
@@ -359,15 +359,15 @@ final class TestRoutingDecisionSelector
         }
 
         Duration refreshPeriod = new Duration(1, MILLISECONDS);
-        RoutingDecisionSelector routingDecisionSelector =
-                RoutingDecisionSelector.byRoutingRulesEngine(file.getPath(), refreshPeriod, requestAnalyzerConfig);
+        RoutingSelector routingSelector =
+                RoutingSelector.byRoutingRulesEngine(file.getPath(), refreshPeriod, requestAnalyzerConfig);
 
         HttpServletRequest mockRequest = new QueryRequestMock()
                 .httpHeader(TRINO_SOURCE_HEADER, "airflow")
                 .requestAnalyzerConfig(requestAnalyzerConfig)
                 .getHttpServletRequest();
 
-        String routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        String routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
         assertThat(routingGroup).isEqualTo("etl");
 
         try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), UTF_8)) {
@@ -382,7 +382,7 @@ final class TestRoutingDecisionSelector
         Thread.sleep(2 * refreshPeriod.toMillis());
 
         when(mockRequest.getHeader(TRINO_SOURCE_HEADER)).thenReturn("airflow");
-        routingGroup = routingDecisionSelector.findRoutingDestination(mockRequest).routingGroup();
+        routingGroup = routingSelector.findRoutingDestination(mockRequest).routingGroup();
 
         assertThat(routingGroup).isEqualTo("etl2");
 

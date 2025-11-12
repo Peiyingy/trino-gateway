@@ -80,8 +80,9 @@ public interface RoutingManager
      * Provides the backend configuration for a given routing group and user.
      *
      * @param routingGroup the routing group to use for backend selection
+     * @param routingCluster the routing cluster to use for backend selection
      * @param user the user requesting the backend
      * @return the backend configuration for the selected cluster
      */
-    ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String user);
+    ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String routingCluster, String user);
 }

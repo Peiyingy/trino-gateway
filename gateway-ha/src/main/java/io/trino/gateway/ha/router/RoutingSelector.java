@@ -23,7 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 /**
  * RoutingGroupSelector provides a way to match an HTTP request to a Gateway routing group.
  */
-public interface RoutingDecisionSelector
+public interface RoutingSelector
 {
     String ROUTING_GROUP_HEADER = "X-Trino-Routing-Group";
 
@@ -31,30 +31,30 @@ public interface RoutingDecisionSelector
      * Routing group selector that relies on the X-Trino-Routing-Group
      * header to determine the right routing group.
      */
-    static RoutingDecisionSelector byRoutingGroupHeader()
+    static RoutingSelector byRoutingGroupHeader()
     {
-        return request -> new RoutingSelectorResponse(request.getHeader(ROUTING_GROUP_HEADER));
+        return request -> new RoutingSelectorResponse(request.getHeader(ROUTING_GROUP_HEADER), null);
     }
 
     /**
      * Routing group selector that uses routing engine rules
      * to determine the right routing group.
      */
-    static RoutingDecisionSelector byRoutingRulesEngine(String rulesConfigPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
+    static RoutingSelector byRoutingRulesEngine(String rulesConfigPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
     {
-        return new FileBasedRoutingDecisionSelector(rulesConfigPath, rulesRefreshPeriod, requestAnalyzerConfig);
+        return new FileBasedRoutingSelector(rulesConfigPath, rulesRefreshPeriod, requestAnalyzerConfig);
     }
 
     /**
      * Routing group selector that uses RESTful API
      * to determine the right routing group.
      */
-    static RoutingDecisionSelector byRoutingExternal(
+    static RoutingSelector byRoutingExternal(
             HttpClient httpClient,
             RulesExternalConfiguration rulesExternalConfiguration,
             RequestAnalyzerConfig requestAnalyzerConfig)
     {
-        return new ExternalRoutingDecisionSelector(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
+        return new ExternalRoutingSelector(httpClient, rulesExternalConfiguration, requestAnalyzerConfig);
     }
 
     /**

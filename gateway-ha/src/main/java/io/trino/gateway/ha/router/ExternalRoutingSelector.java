@@ -51,10 +51,10 @@ import static io.trino.gateway.ha.handler.HttpUtils.TRINO_REQUEST_USER;
 import static java.util.Collections.list;
 import static java.util.Objects.requireNonNull;
 
-public class ExternalRoutingDecisionSelector
-        implements RoutingDecisionSelector
+public class ExternalRoutingSelector
+        implements RoutingSelector
 {
-    private static final Logger log = Logger.get(ExternalRoutingDecisionSelector.class);
+    private static final Logger log = Logger.get(ExternalRoutingSelector.class);
     private final Set<String> excludeHeaders;
     private final URI uri;
     private final boolean propagateErrors;
@@ -65,7 +65,7 @@ public class ExternalRoutingDecisionSelector
             createJsonResponseHandler(jsonCodec(ExternalRouterResponse.class));
 
     @VisibleForTesting
-    ExternalRoutingDecisionSelector(HttpClient httpClient, RulesExternalConfiguration rulesExternalConfiguration, RequestAnalyzerConfig requestAnalyzerConfig)
+    ExternalRoutingSelector(HttpClient httpClient, RulesExternalConfiguration rulesExternalConfiguration, RequestAnalyzerConfig requestAnalyzerConfig)
     {
         this.httpClient = requireNonNull(httpClient, "httpClient is null");
         this.excludeHeaders = ImmutableSet.<String>builder()
@@ -128,14 +128,14 @@ public class ExternalRoutingDecisionSelector
                     log.info("External routing service modified headers to: %s", filteredHeaders);
                 }
             }
-            return new RoutingSelectorResponse(response.routingGroup(), filteredHeaders);
+            return new RoutingSelectorResponse(response.routingGroup(), response.routingCluster(), filteredHeaders);
         }
         catch (Exception e) {
             throwIfInstanceOf(e, WebApplicationException.class);
             log.error(e, "Error occurred while retrieving routing group "
                     + "from external routing rules processing at " + uri);
         }
-        return new RoutingSelectorResponse(servletRequest.getHeader(ROUTING_GROUP_HEADER));
+        return new RoutingSelectorResponse(servletRequest.getHeader(ROUTING_GROUP_HEADER), null);
     }
 
     private RoutingGroupExternalBody createRequestBody(HttpServletRequest request)

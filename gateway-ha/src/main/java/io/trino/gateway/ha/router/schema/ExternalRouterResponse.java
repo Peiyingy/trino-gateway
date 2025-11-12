@@ -27,9 +27,10 @@ import java.util.Map;
  */
 public record ExternalRouterResponse(
         @Nullable String routingGroup,
+        @Nullable String routingCluster,
         List<String> errors,
         @Nullable Map<String, String> externalHeaders)
-        implements RoutingGroupResponse
+        implements RoutingResponse
 {
     public ExternalRouterResponse {
         externalHeaders = externalHeaders == null ? ImmutableMap.of() : ImmutableMap.copyOf(externalHeaders);
