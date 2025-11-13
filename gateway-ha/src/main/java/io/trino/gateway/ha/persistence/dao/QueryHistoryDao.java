@@ -116,7 +116,7 @@ public interface QueryHistoryDao
     List<Map<String, Object>> findDistribution(long created);
 
     @SqlUpdate("""
-            INSERT INTO query_history (query_id, query_text, backend_url, user_name, source, created, routing_group, external_url)
+            INSERT INTO query_history (query_id, query_text, backend_url, user_name, source, created, routing_decision, external_url)
             VALUES (:queryId, :queryText, :backendUrl, :userName, :source, :created, :routingDecision, :externalUrl)
             """)
     void insertHistory(String queryId, String queryText, String backendUrl, String userName, String source, long created, String routingDecision, String externalUrl);
