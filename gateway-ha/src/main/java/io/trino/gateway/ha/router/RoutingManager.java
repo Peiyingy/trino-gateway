@@ -50,7 +50,7 @@ public interface RoutingManager
      * @param queryId the unique identifier of the query
      * @param routingGroup the routing group to associate with the query
      */
-    void setRoutingGroupForQueryId(String queryId, String routingGroup);
+    void setRoutingDecisionForQueryId(String queryId, String routingGroup);
 
     /**
      * Finds the backend cluster associated with a given query ID.
@@ -74,7 +74,7 @@ public interface RoutingManager
      * @param queryId the unique identifier of the query
      * @return the routing group, or null if not found
      */
-    String findRoutingGroupForQueryId(String queryId);
+    String findRoutingDecisionForQueryId(String queryId);
 
     /**
      * Provides the backend configuration for a given routing group and user.

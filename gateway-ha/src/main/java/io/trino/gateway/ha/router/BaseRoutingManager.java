@@ -43,6 +43,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+
 /**
  * This class performs health check, stats counts for each backend and provides a backend given
  * request object. Default implementation comes here.
@@ -57,7 +58,7 @@ public abstract class BaseRoutingManager
     private final String defaultRoutingGroup;
     private final QueryHistoryManager queryHistoryManager;
     private final LoadingCache<String, String> queryIdBackendCache;
-    private final LoadingCache<String, String> queryIdRoutingGroupCache;
+    private final LoadingCache<String, String> queryIdRoutingDecisionCache;
     private final LoadingCache<String, String> queryIdExternalUrlCache;
 
     public BaseRoutingManager(GatewayBackendManager gatewayBackendManager, QueryHistoryManager queryHistoryManager, RoutingConfiguration routingConfiguration)
@@ -66,7 +67,7 @@ public abstract class BaseRoutingManager
         this.defaultRoutingGroup = routingConfiguration.getDefaultRoutingGroup();
         this.queryHistoryManager = queryHistoryManager;
         this.queryIdBackendCache = buildCache(this::findBackendForUnknownQueryId);
-        this.queryIdRoutingGroupCache = buildCache(this::findRoutingGroupForUnknownQueryId);
+        this.queryIdRoutingDecisionCache = buildCache(this::findRoutingDecisionForUnknownQueryId);
         this.queryIdExternalUrlCache = buildCache(this::findExternalUrlForUnknownQueryId);
         this.backendToStatus = new ConcurrentHashMap<>();
     }
@@ -83,9 +84,9 @@ public abstract class BaseRoutingManager
     }
 
     @Override
-    public void setRoutingGroupForQueryId(String queryId, String routingGroup)
+    public void setRoutingDecisionForQueryId(String queryId, String routingDecision)
     {
-        queryIdRoutingGroupCache.put(queryId, routingGroup);
+        queryIdRoutingDecisionCache.put(queryId, routingDecision);
     }
 
     /**
@@ -155,16 +156,16 @@ public abstract class BaseRoutingManager
      */
     @Nullable
     @Override
-    public String findRoutingGroupForQueryId(String queryId)
+    public String findRoutingDecisionForQueryId(String queryId)
     {
-        String routingGroup = null;
+        String routingDecision = null;
         try {
-            routingGroup = queryIdRoutingGroupCache.get(queryId);
+            routingDecision = queryIdRoutingDecisionCache.get(queryId);
         }
         catch (ExecutionException e) {
             log.warn("Exception while loading queryId from routing group cache %s", e.getLocalizedMessage());
         }
-        return routingGroup;
+        return routingDecision;
     }
 
     @Override
@@ -249,11 +250,11 @@ public abstract class BaseRoutingManager
     /**
      * Attempts to look up the routing group associated with the query id from query history table
      */
-    private String findRoutingGroupForUnknownQueryId(String queryId)
+    private String findRoutingDecisionForUnknownQueryId(String queryId)
     {
-        String routingGroup = queryHistoryManager.getRoutingGroupForQueryId(queryId);
-        setRoutingGroupForQueryId(queryId, routingGroup);
-        return routingGroup;
+        String routingDecision = queryHistoryManager.getRoutingDecisionForQueryId(queryId);
+        setRoutingDecisionForQueryId(queryId, routingDecision);
+        return routingDecision;
     }
 
     /**

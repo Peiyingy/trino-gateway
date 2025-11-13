@@ -21,8 +21,8 @@ import io.trino.gateway.ha.config.ProxyBackendConfiguration;
 import io.trino.gateway.ha.handler.schema.RoutingDestination;
 import io.trino.gateway.ha.handler.schema.RoutingTargetResponse;
 import io.trino.gateway.ha.router.GatewayCookie;
-import io.trino.gateway.ha.router.RoutingSelector;
 import io.trino.gateway.ha.router.RoutingManager;
+import io.trino.gateway.ha.router.RoutingSelector;
 import io.trino.gateway.ha.router.schema.RoutingSelectorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
@@ -73,12 +73,12 @@ public class RoutingTargetHandler
         Optional<String> previousCluster = getPreviousCluster(queryId, request);
 
         RoutingTargetResponse routingTargetResponse = previousCluster.map(cluster -> {
-            String routingGroup = queryId.map(routingManager::findRoutingGroupForQueryId)
+            String routingDecision = queryId.map(routingManager::findRoutingDecisionForQueryId)
                     .orElse(defaultRoutingGroup);
             String externalUrl = queryId.map(routingManager::findExternalUrlForQueryId)
                     .orElse(cluster);
             return new RoutingTargetResponse(
-                    new RoutingDestination(routingGroup, cluster, buildUriWithNewCluster(cluster, request), externalUrl),
+                    new RoutingDestination(routingDecision, cluster, buildUriWithNewCluster(cluster, request), externalUrl),
                     request);
         }).orElse(getRoutingTargetResponse(request));
 
@@ -104,8 +104,7 @@ public class RoutingTargetHandler
         if (!routingDestination.externalHeaders().isEmpty()) {
             modifiedRequest = new HeaderModifyingRequestWrapper(request, routingDestination.externalHeaders());
         }
-        // If routingCluster is not null, use it as routingDecision, otherwise use routingDecision
-        // This value would still be null if neither applies
+        // If routingCluster is not null, use it as routingDecision, otherwise use routingGroup
         String routingDecision = !isNullOrEmpty(routingCluster) ? routingCluster : routingGroup;
         return new RoutingTargetResponse(
                 new RoutingDestination(routingDecision, clusterHost, buildUriWithNewCluster(clusterHost, request), externalUrl),

@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +43,7 @@ public class FileBasedRoutingSelector
         implements RoutingSelector
 {
     private static final Logger log = Logger.get(FileBasedRoutingSelector.class);
-    public static final String RESULTS_ROUTING_GROUP_KEY = "routingDecision";
+    public static final String RESULTS_ROUTING_GROUP_KEY = "routingGroup";
     public static final String RESULTS_ROUTING_CLUSTER_KEY = "routingCluster";
 
     private static final ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
@@ -62,7 +62,7 @@ public class FileBasedRoutingSelector
     public RoutingSelectorResponse findRoutingDestination(HttpServletRequest request)
     {
         // Keep only the highest-priority rule outcome by limiting the map to a single entry.
-        LinkedHashMap<String, String> result = new LinkedHashMap<>(1) {@Override
+        LinkedHashMap<String, String> result = new LinkedHashMap<>(1) { @Override
             protected boolean removeEldestEntry(Map.Entry<String, String> eldest)
             {
                 return size() > 1;

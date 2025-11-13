@@ -1,2 +1,2 @@
 ALTER TABLE query_history
-    ADD routing_group VARCHAR(255);
+    ADD routing_decision VARCHAR(255);

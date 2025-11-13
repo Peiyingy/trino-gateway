@@ -244,7 +244,7 @@ final class TestQueryCountBasedRouter
     @Test
     void testUserWithNoQueuedQueries()
     {
-        ProxyBackendConfiguration proxyConfig = queryCountBasedRouter.provideBackendConfiguration(routingConfiguration.getDefaultRoutingGroup(), null,"u101");
+        ProxyBackendConfiguration proxyConfig = queryCountBasedRouter.provideBackendConfiguration(routingConfiguration.getDefaultRoutingGroup(), null, "u101");
         String proxyTo = proxyConfig.getProxyTo();
 
         assertThat(BACKEND_URL_3).isEqualTo(proxyTo);
