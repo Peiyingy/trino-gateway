@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * Response from the routing service that includes:
- * - routingGroup: The target routing group for the request (Optional)
+ * - routingDecision: The target routing group for the request (Optional)
  * - routingCluster: The target routing cluster for the request (Optional)
  * - externalHeaders: Headers that can be set in the request (Currently can only be set in ExternalRoutingGroupSelector)
  */

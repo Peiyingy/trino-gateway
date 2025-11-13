@@ -107,8 +107,9 @@ public abstract class BaseRoutingManager
     public ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String routingCluster, String user)
     {
         if (!isNullOrEmpty(routingCluster)) {
-            Optional<ProxyBackendConfiguration> backend = gatewayBackendManager.getBackendByName(routingCluster);
-            return backend.orElseGet(() -> provideDefaultBackendConfiguration(user));
+            return gatewayBackendManager.getBackendByName(routingCluster)
+                    .filter(backEnd -> isBackendHealthy(backEnd.getName()))
+                    .orElseGet(() -> provideDefaultBackendConfiguration(user));
         }
         List<ProxyBackendConfiguration> backends = gatewayBackendManager.getActiveBackends(routingGroup).stream()
                 .filter(backEnd -> isBackendHealthy(backEnd.getName()))

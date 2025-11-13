@@ -355,7 +355,7 @@ final class TestRoutingSelector
                             + "description: \"original rule\"\n"
                             + "condition: \"request.getHeader(\\\"X-Trino-Source\\\") == \\\"airflow\\\"\"\n"
                             + "actions:\n"
-                            + "  - \"result.put(\\\"routingGroup\\\", \\\"etl\\\")\"");
+                            + "  - \"result.put(\\\"routingDecision\\\", \\\"etl\\\")\"");
         }
 
         Duration refreshPeriod = new Duration(1, MILLISECONDS);
@@ -377,7 +377,7 @@ final class TestRoutingSelector
                             + "description: \"updated rule\"\n"
                             + "condition: \"request.getHeader(\\\"X-Trino-Source\\\") == \\\"airflow\\\"\"\n"
                             + "actions:\n"
-                            + "  - \"result.put(\\\"routingGroup\\\", \\\"etl2\\\")\""); // change from etl to etl2
+                            + "  - \"result.put(\\\"routingDecision\\\", \\\"etl2\\\")\""); // change from etl to etl2
         }
         Thread.sleep(2 * refreshPeriod.toMillis());
 

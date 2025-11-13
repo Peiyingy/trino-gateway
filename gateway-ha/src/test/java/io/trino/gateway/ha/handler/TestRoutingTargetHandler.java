@@ -230,7 +230,7 @@ class TestRoutingTargetHandler
         RoutingTargetResponse response = handler.resolveRouting(request);
 
         // Verify that when no routing group header is set, we default to "adhoc"
-        assertThat(response.routingDestination().routingGroup()).isEqualTo("default-group");
+        assertThat(response.routingDestination().routingDecision()).isEqualTo("default-group");
         assertThat(response.modifiedRequest().getHeader("X-Empty-Group-Header"))
                 .isEqualTo("should-be-set");
     }
@@ -243,7 +243,7 @@ class TestRoutingTargetHandler
 
         RoutingTargetResponse result = handler.resolveRouting(request);
 
-        assertThat(result.routingDestination().routingGroup()).isEqualTo("default-group");
+        assertThat(result.routingDestination().routingDecision()).isEqualTo("default-group");
     }
 
     @Test
@@ -255,7 +255,7 @@ class TestRoutingTargetHandler
 
         RoutingTargetResponse result = handler.resolveRouting(request);
 
-        assertThat(result.routingDestination().routingGroup()).isEqualTo("test-group");
+        assertThat(result.routingDestination().routingDecision()).isEqualTo("test-group");
     }
 
     @Test
@@ -266,7 +266,7 @@ class TestRoutingTargetHandler
 
         RoutingTargetResponse result = handler.resolveRouting(request);
 
-        assertThat(result.routingDestination().routingGroup()).isEqualTo("default-group");
+        assertThat(result.routingDestination().routingDecision()).isEqualTo("default-group");
     }
 
     @Test
@@ -277,7 +277,7 @@ class TestRoutingTargetHandler
 
         RoutingTargetResponse result = handler.resolveRouting(request);
 
-        assertThat(result.routingDestination().routingGroup()).isEqualTo("test-group");
+        assertThat(result.routingDestination().routingDecision()).isEqualTo("test-group");
     }
 
     @Test

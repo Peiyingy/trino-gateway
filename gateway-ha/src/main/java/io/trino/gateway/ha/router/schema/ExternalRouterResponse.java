@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * Response from the external routing service that includes:
- * - routingGroup: The target routing group for the request (optional)
+ * - routingDecision: The target routing group for the request (optional)
  * - errors: Any errors that occurred during routing
  * - externalHeaders: Headers that can be set in the request
  */

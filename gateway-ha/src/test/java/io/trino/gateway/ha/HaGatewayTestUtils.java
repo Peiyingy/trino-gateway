@@ -151,7 +151,7 @@ public class HaGatewayTestUtils
                                 + externalUrl
                                 + "\",\"active\": "
                                 + active
-                                + ",\"routingGroup\": \""
+                                + ",\"routingDecision\": \""
                                 + routingGroup
                                 + "\"}",
                         MediaType.parse("application/json; charset=utf-8"));

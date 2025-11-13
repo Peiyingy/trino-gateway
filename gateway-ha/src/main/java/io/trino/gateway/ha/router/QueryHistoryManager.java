@@ -189,7 +189,7 @@ public interface QueryHistoryManager
                     .add("source", source)
                     .add("backendUrl", backendUrl)
                     .add("captureTime", captureTime)
-                    .add("routingGroup", routingGroup)
+                    .add("routingDecision", routingGroup)
                     .add("externalUrl", externalUrl)
                     .toString();
         }
