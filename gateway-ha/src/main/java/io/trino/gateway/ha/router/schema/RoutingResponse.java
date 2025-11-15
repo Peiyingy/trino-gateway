@@ -18,12 +18,12 @@ import jakarta.annotation.Nullable;
 import java.util.Map;
 
 /**
- Interface representing the response from a routing group selector.
+ Interface representing the response from a routing selector.
  This interface defines the contract for responses that determine how requests should be routed within
     the Trino Gateway system.
 
  Implementations of this interface are used to:
-    * Specify the target routing group for a request
+    * Specify the target routing group or cluster for a request
     * Provide additional headers that should be added to the request
  */
 public interface RoutingResponse

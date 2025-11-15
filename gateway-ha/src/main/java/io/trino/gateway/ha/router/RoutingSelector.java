@@ -21,14 +21,14 @@ import io.trino.gateway.ha.router.schema.RoutingSelectorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * RoutingGroupSelector provides a way to match an HTTP request to a Gateway routing group.
+ * RoutingSelector provides a way to match an HTTP request to a Gateway routing group.
  */
 public interface RoutingSelector
 {
     String ROUTING_GROUP_HEADER = "X-Trino-Routing-Group";
 
     /**
-     * Routing group selector that relies on the X-Trino-Routing-Group
+     * Routing selector that relies on the X-Trino-Routing-Group
      * header to determine the right routing group.
      */
     static RoutingSelector byRoutingGroupHeader()
@@ -37,8 +37,8 @@ public interface RoutingSelector
     }
 
     /**
-     * Routing group selector that uses routing engine rules
-     * to determine the right routing group.
+     * Routing selector that uses routing engine rules
+     * to determine the right routing group or cluster.
      */
     static RoutingSelector byRoutingRulesEngine(String rulesConfigPath, Duration rulesRefreshPeriod, RequestAnalyzerConfig requestAnalyzerConfig)
     {
@@ -46,7 +46,7 @@ public interface RoutingSelector
     }
 
     /**
-     * Routing group selector that uses RESTful API
+     * Routing selector that uses RESTful API
      * to determine the right routing group.
      */
     static RoutingSelector byRoutingExternal(
@@ -58,7 +58,7 @@ public interface RoutingSelector
     }
 
     /**
-     * Given an HTTP request find a routing group to direct the request to. If a routing group cannot
+     * Given an HTTP request find a routing destination to direct the request to. If a routing group or cluster cannot
      * be determined return null.
      */
     RoutingSelectorResponse findRoutingDestination(HttpServletRequest request);

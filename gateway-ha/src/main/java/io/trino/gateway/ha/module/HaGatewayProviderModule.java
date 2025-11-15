@@ -212,7 +212,7 @@ public class HaGatewayProviderModule
 
     @Provides
     @Singleton
-    public RoutingSelector getRoutingGroupSelector(@ForRouter HttpClient httpClient)
+    public RoutingSelector getRoutingSelector(@ForRouter HttpClient httpClient)
     {
         RoutingRulesConfiguration routingRulesConfig = configuration.getRoutingRules();
         if (routingRulesConfig.isRulesEngineEnabled()) {

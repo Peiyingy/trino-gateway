@@ -61,7 +61,7 @@ public class FileBasedRoutingSelector
     @Override
     public RoutingSelectorResponse findRoutingDestination(HttpServletRequest request)
     {
-        // Keep only the highest-priority rule outcome by limiting the map to a single entry.
+        // Keep only the highest-priority rule result by limiting the map to a single entry.
         LinkedHashMap<String, String> result = new LinkedHashMap<>(1) { @Override
             protected boolean removeEldestEntry(Map.Entry<String, String> eldest)
             {

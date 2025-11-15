@@ -101,8 +101,14 @@ public abstract class BaseRoutingManager
     }
 
     /**
-     * Performs routing to a given cluster group. This falls back to a default backend, if no scheduled
-     * backend is found.
+     * Selects a backend configuration for the request.
+     *  At most one of `routingCluster` or `routingGroup` may be provided; they are mutually exclusive
+     * - If `routingCluster` is provided, returns that backend when it is active and healthy; otherwise
+     *   falls back to the default backend.
+     * - If `routingCluster` is not provided, considers all active backends in `routingGroup`, filters to
+     *   healthy ones, and delegates to `selectBackend(...)` to choose; if none are eligible, falls back
+     *   to the default backend.
+     * - If neither `routingCluster` nor `routingGroup` is provided, falls back to the default backend.
      */
     @Override
     public ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String routingCluster, String user)
@@ -152,7 +158,7 @@ public abstract class BaseRoutingManager
     }
 
     /**
-     * Looks up the routing group associated with the queryId in the cache.
+     * Looks up the routing decision associated with the queryId in the cache.
      * If it's not in the cache, look up in query history
      */
     @Nullable
@@ -164,7 +170,7 @@ public abstract class BaseRoutingManager
             routingDecision = queryIdRoutingDecisionCache.get(queryId);
         }
         catch (ExecutionException e) {
-            log.warn("Exception while loading queryId from routing group cache %s", e.getLocalizedMessage());
+            log.warn("Exception while loading queryId from routing decision cache %s", e.getLocalizedMessage());
         }
         return routingDecision;
     }
@@ -249,7 +255,7 @@ public abstract class BaseRoutingManager
     }
 
     /**
-     * Attempts to look up the routing group associated with the query id from query history table
+     * Attempts to look up the routing decision associated with the query id from query history table
      */
     private String findRoutingDecisionForUnknownQueryId(String queryId)
     {

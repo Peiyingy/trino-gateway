@@ -27,7 +27,7 @@ public record GatewayBackend(
     public GatewayBackend
     {
         requireNonNull(name, "name is null");
-        requireNonNull(routingGroup, "routingDecision is null");
+        requireNonNull(routingGroup, "routingGroup is null");
         requireNonNull(backendUrl, "backendUrl is null");
         requireNonNull(externalUrl, "externalUrl is null");
     }

@@ -3,8 +3,8 @@ serverConfig:
   http-server.http.port: 8080
 
 routingRules:
-  rulesEngineEnabled: True
-  rulesConfigPath: "gateway-ha/src/main/resources/rules/routing_rules.yml"
+  rulesEngineEnabled: False
+  # rulesConfigPath: "gateway-ha/src/main/resources/rules/routing_rules.yml"
 
 dataStore:
   jdbcUrl: jdbc:postgresql://localhost:5432/trino_gateway_db

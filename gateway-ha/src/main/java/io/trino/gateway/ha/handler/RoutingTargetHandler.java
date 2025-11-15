@@ -104,7 +104,7 @@ public class RoutingTargetHandler
         if (!routingDestination.externalHeaders().isEmpty()) {
             modifiedRequest = new HeaderModifyingRequestWrapper(request, routingDestination.externalHeaders());
         }
-        // If routingCluster is not null, use it as routingDecision, otherwise use routingGroup
+        // routingCluster and routingGroup are mutually exclusive. If neither is set, fall back to the default routing group.
         String routingDecision = !isNullOrEmpty(routingCluster) ? routingCluster : routingGroup;
         return new RoutingTargetResponse(
                 new RoutingDestination(routingDecision, clusterHost, buildUriWithNewCluster(clusterHost, request), externalUrl),
