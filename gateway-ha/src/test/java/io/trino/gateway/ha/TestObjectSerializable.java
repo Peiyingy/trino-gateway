@@ -61,7 +61,7 @@ final class TestObjectSerializable
         proxyBackendConfiguration.setActive(false);
         proxyBackendConfiguration.setRoutingGroup("batch-1");
         assertThat(objectMapper.writeValueAsString(proxyBackendConfiguration))
-                .contains(ImmutableList.of("externalUrl", "active", "routingDecision"));
+                .contains(ImmutableList.of("externalUrl", "active", "routingGroup"));
     }
 
     @Test
@@ -193,7 +193,7 @@ final class TestObjectSerializable
         backendResponse.setExternalUrl("example.com");
         backendResponse.setStatus("HEALTHY");
         assertThat(objectMapper.writeValueAsString(backendResponse))
-                .contains(ImmutableList.of("queued", "running", "active", "routingDecision", "externalUrl", "name", "proxyTo", "status"));
+                .contains(ImmutableList.of("queued", "running", "active", "routingGroup", "externalUrl", "name", "proxyTo", "status"));
     }
 
     @Test

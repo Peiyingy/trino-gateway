@@ -109,6 +109,7 @@ public abstract class BaseRoutingManager
     {
         if (!isNullOrEmpty(routingCluster)) {
             return gatewayBackendManager.getBackendByName(routingCluster)
+                    .filter(ProxyBackendConfiguration::isActive)
                     .filter(backEnd -> isBackendHealthy(backEnd.getName()))
                     .orElseGet(() -> provideDefaultBackendConfiguration(user));
         }
