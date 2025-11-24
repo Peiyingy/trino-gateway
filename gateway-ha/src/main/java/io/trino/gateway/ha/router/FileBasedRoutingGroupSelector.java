@@ -27,10 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
 import static io.trino.gateway.ha.handler.HttpUtils.TRINO_QUERY_PROPERTIES;
@@ -72,13 +69,15 @@ public class FileBasedRoutingGroupSelector
             data = ImmutableMap.of("request", request);
         }
 
-        rules.get().forEach(rule -> {
+        boolean enforceIsolation = false;
+        for (RoutingRule rule : Objects.requireNonNull(rules.get())) {
             if (rule.evaluateCondition(data, state)) {
                 log.debug("%s evaluated to true on request: %s", rule, request);
                 rule.evaluateAction(result, data, state);
+                enforceIsolation = rule.isEnforceIsolation();
             }
-        });
-        return new RoutingSelectorResponse(result.get(RESULTS_ROUTING_GROUP_KEY));
+        }
+        return new RoutingSelectorResponse(result.get(RESULTS_ROUTING_GROUP_KEY), ImmutableMap.of(), enforceIsolation);
     }
 
     public List<RoutingRule> readRulesFromPath(Path rulesPath)

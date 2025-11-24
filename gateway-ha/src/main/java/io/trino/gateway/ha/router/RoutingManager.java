@@ -83,5 +83,5 @@ public interface RoutingManager
      * @param user the user requesting the backend
      * @return the backend configuration for the selected cluster
      */
-    ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String user);
+    ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String user, boolean enforceIsolation);
 }

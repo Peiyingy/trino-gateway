@@ -103,11 +103,14 @@ public abstract class BaseRoutingManager
      * backend is found.
      */
     @Override
-    public ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String user)
+    public ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String user, boolean enforceIsolation)
     {
         List<ProxyBackendConfiguration> backends = gatewayBackendManager.getActiveBackends(routingGroup).stream()
                 .filter(backEnd -> isBackendHealthy(backEnd.getName()))
                 .toList();
+        if (backends.isEmpty() && enforceIsolation) {
+            throw new IllegalStateException("Number of active backends found zero");
+        }
         return selectBackend(backends, user).orElseGet(() -> provideDefaultBackendConfiguration(user));
     }
 

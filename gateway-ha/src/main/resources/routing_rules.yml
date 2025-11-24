@@ -1,0 +1,12 @@
+---
+name: "routing_cluster_rule"
+priority: 100
+actions:
+- "result.put(\"routingCluster\", \"trino-1\")"
+condition: "request.getHeader(\"X-Trino-User\") == \"pye\""
+---
+name: "routing_group_rule"
+priority: 10
+actions:
+- "result.put(\"routingGroup\", \"adhoc\")"
+condition: "request.getHeader(\"X-Trino-User\") == \"pye\""
