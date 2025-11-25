@@ -27,13 +27,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
 import static io.trino.gateway.ha.handler.HttpUtils.TRINO_QUERY_PROPERTIES;
 import static io.trino.gateway.ha.handler.HttpUtils.TRINO_REQUEST_USER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.sort;
+import static java.util.Objects.requireNonNull;
 
 public class FileBasedRoutingGroupSelector
         implements RoutingGroupSelector
@@ -70,7 +74,7 @@ public class FileBasedRoutingGroupSelector
         }
 
         boolean enforceIsolation = false;
-        for (RoutingRule rule : Objects.requireNonNull(rules.get())) {
+        for (RoutingRule rule : requireNonNull(rules.get())) {
             if (rule.evaluateCondition(data, state)) {
                 log.debug("%s evaluated to true on request: %s", rule, request);
                 rule.evaluateAction(result, data, state);
