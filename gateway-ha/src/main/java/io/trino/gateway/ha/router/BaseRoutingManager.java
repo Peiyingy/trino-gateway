@@ -103,8 +103,8 @@ public abstract class BaseRoutingManager
     }
 
     /**
-     * Performs routing to a given cluster group. This falls back to a default backend, if no scheduled
-     * backend is found.
+     * Performs routing to a given cluster group. This falls back to a default backend if the target group
+     * has no suitable backend unless {@code enforceIsolation} is true, in which case a 404 is returned.
      */
     @Override
     public ProxyBackendConfiguration provideBackendConfiguration(String routingGroup, String user, boolean enforceIsolation)
